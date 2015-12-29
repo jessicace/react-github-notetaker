@@ -41,8 +41,8 @@
   1. Create public/index.html. This will contain the root view of our
      application. We are referencing bundle.js - this will contain our
      transpiled JavaScript.
-     #+NAME public/index.html
      #+BEGIN_SRC html
+       <!-- public/index.html -->
        <!DOCTYPE html>
        <html lang="en">
          <head>
@@ -61,8 +61,8 @@
 ** Webpack Configuration
   1. Create webpack.config.js. Here, we are exporting an object with our
      webpack configuration. 
-     #+NAME webpack.config.js
      #+BEGIN_SRC js
+     // webpack.config.js
      module.exports = {
       
      }
@@ -72,16 +72,16 @@
      is always one root component. Webpack will take this
      component and run it through the transformations specified in
      the loader. 
-     #+NAME webpack.config.js
      #+BEGIN_SRC js
+       // webpack.config.js
        module.exports = {
          entry: "./app/components/Main.js"
        }
      #+END_SRC
   3. Once webpack is done transpiling, this tells it where to
-     place the output.          
-     #+NAME webpack.config.js
+     place the output.
      #+BEGIN_SRC js
+       // webpack.config.js
        module.exports = {
          entry: "./app/components/Main.js",
          output: {
@@ -98,8 +98,8 @@
      earlier to transform our JSX. We also want to use
      babel-preset-es2015 so we can write ES2015 code but still
      have the browser understand us.
-     #+NAME webpack.config.js
      #+BEGIN_SRC js
+       // webpack.config.js
        module.exports = {
          entry: "./app/components/Main.js",
          output: {
@@ -125,8 +125,8 @@
 ** Create our first component
   1. Create app/components/Main.js file, which contains our root
      component. 
-     #+NAME app/components/Main.js
      #+BEGIN_SRC js
+       // app/components/Main.js
        var React = require('react');
 
        var Main = React.createClass({
@@ -135,8 +135,8 @@
      #+END_SRC
   2. Add the render method. Render specifies what the UI looks
      like for this specific element.
-     #+NAME app/components/Main.js
      #+BEGIN_SRC js
+       // app/components/Main.js
        var React = require('react');
 
        var Main = React.createClass({
@@ -153,8 +153,8 @@
      to render on the client. We give it our Main component, and
      telling it where to render - which is the #app element in
      public/index.html created earlier.
-     #+NAME app/components/Main.js
      #+BEGIN_SRC js
+       // app/components/Main.js
        var React = require('react');
        var ReactDOM = require('react-dom');
 
