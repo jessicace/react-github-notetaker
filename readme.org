@@ -1,0 +1,179 @@
+* Up and Running with React and Webpack
+** Initialisation / Install dependencies 
+  1. Initialise our package.json file. Go through the interactive
+     steps, or just hit enter to accept the defaults.
+     #+BEGIN_SRC sh
+     npm init
+     #+END_SRC
+  2. Install React.
+     #+BEGIN_SRC sh
+     npm install --save react@0.14.3
+     #+END_SRC
+  3. Install react-dom. ReactDOM is used for rendering, including
+     server side rendering.
+     #+BEGIN_SRC sh
+     npm install --save react-dom@0.14.3
+     #+END_SRC
+  4. Install Babel packages as dev dependencies. Babel is a JavaScript
+     compiler. Babel compiles the code to something the browser can read.
+     #+BEGIN_SRC sh
+     npm install --save-dev babel-core@6.3.13
+     #+END_SRC
+  5. Install React babel preset. It contains plugins for transforming
+     jsx.
+     #+BEGIN_SRC sh
+     npm install --save-dev babel-preset-react@6.3.13
+     #+END_SRC
+  6. Install ES2015 babel preset. This preset contains various babel
+     plugins for transforming your ES2015 code.
+     #+BEGIN_SRC sh
+     npm install --save-dev babel-preset-es2015@6.3.13
+     #+END_SRC
+  7. Install webpack.
+     #+BEGIN_SRC sh
+     npm install webpack --save-dev
+     #+END_SRC
+  8. Install babel-loader. Babel-Loader is a webpack plugin.
+     #+BEGIN_SRC sh
+     npm install --save-dev babel-loader@6.2.0
+     #+END_SRC
+** Entry point to our application
+  1. Create public/index.html. This will contain the root view of our
+     application. We are referencing bundle.js - this will contain our
+     transpiled JavaScript.
+     #+NAME public/index.html
+     #+BEGIN_SRC html
+       <!DOCTYPE html>
+       <html lang="en">
+         <head>
+           <meta charset="UTF-8">
+           <title>React Github Notetaker</title>
+           <link rel="stylesheet"
+                 type="text/css"
+                 href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+         </head>
+         <body>
+           <div id="app"></div>
+           <script src="bundle.js"></script>
+         </body>
+       </html>
+     #+END_SRC
+** Webpack Configuration
+  1. Create webpack.config.js. Here, we are exporting an object with our
+     webpack configuration. 
+     #+NAME webpack.config.js
+     #+BEGIN_SRC js
+     module.exports = {
+      
+     }
+     #+END_SRC
+  2. We need to tell webpack where our root component is. It needs
+     this to tell webpack where to start processing our JSX. There
+     is always one root component. Webpack will take this
+     component and run it through the transformations specified in
+     the loader. 
+     #+NAME webpack.config.js
+     #+BEGIN_SRC js
+       module.exports = {
+         entry: "./app/components/Main.js"
+       }
+     #+END_SRC
+  3. Once webpack is done transpiling, this tells it where to
+     place the output.          
+     #+NAME webpack.config.js
+     #+BEGIN_SRC js
+       module.exports = {
+         entry: "./app/components/Main.js",
+         output: {
+           filename: "public/bundle.js"
+         }
+       }
+     #+END_SRC
+  4. Add our loaders. We are using the babel-loader we installed
+     earlier. We don't want to transform anything within
+     the node_modules folder (or bower_components if you're one of
+     those people). Within the query property, we're telling
+     babel what transformations we would like done to our
+     code. We're using the babel-preset-react that we installed
+     earlier to transform our JSX. We also want to use
+     babel-preset-es2015 so we can write ES2015 code but still
+     have the browser understand us.
+     #+NAME webpack.config.js
+     #+BEGIN_SRC js
+       module.exports = {
+         entry: "./app/components/Main.js",
+         output: {
+           filename: "public/bundle.js"
+         },
+         module: {
+           loaders: [
+             {
+               test: /\.jsx$/,
+               exclude: /(node_modules|bower_components)/,
+               loader: 'babel',
+               query: {
+                 presets: [
+                   'react', 
+                   'es2015'
+                 ]
+               }
+             }
+           ]
+         }
+       }
+     #+END_SRC
+** Create our first component
+  1. Create app/components/Main.js file, which contains our root
+     component. 
+     #+NAME app/components/Main.js
+     #+BEGIN_SRC js
+       var React = require('react');
+
+       var Main = React.createClass({
+
+       });
+     #+END_SRC
+  2. Add the render method. Render specifies what the UI looks
+     like for this specific element.
+     #+NAME app/components/Main.js
+     #+BEGIN_SRC js
+       var React = require('react');
+
+       var Main = React.createClass({
+         render: function() {
+           return (
+             <div>
+               Hello World!
+             </div>
+           )
+         }
+       });
+     #+END_SRC
+  3. Render the component. In this instance, we are telling React
+     to render on the client. We give it our Main component, and
+     telling it where to render - which is the #app element in
+     public/index.html created earlier.
+     #+NAME app/components/Main.js
+     #+BEGIN_SRC js
+       var React = require('react');
+       var ReactDOM = require('react-dom');
+
+       var Main = React.createClass({
+           render: function() {
+               return (
+                   <div>
+                       Hello World!
+                   </div>
+               )
+           }
+       });
+
+       ReactDOM.render(<Main />, document.getElementById('app'));
+     #+END_SRC
+** Test our application
+   1. Run webpack. The -w flag is short for watch, so we don't have to
+      run this each time we change our file.
+      #+BEGIN_SRC sh
+      ./node_modules/.bin/webpack -w
+      #+END_SRC
+   2. Open up public/index.html and you should see Hello World!
