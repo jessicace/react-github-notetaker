@@ -448,10 +448,10 @@
      module.exports = Profile;
      #+END_SRC
 
-  2. Add the [[https://facebook.github.io/react/docs/component-specs.html#getinitialstate][getInitialState]] method. This is invoked once, before the
-     component is rendered. This sets the initial state of the
-     component, obviously. Usually, we initialise with empty
-     data. Eventually, this data will be populated.
+  2. Add the [[https://facebook.github.io/react/docs/component-specs.html#getinitialstate][getInitialState]] method. It returns an object. This is
+     invoked once, before the component is rendered. This sets the
+     initial state of the component, obviously. Usually, we initialise
+     with empty data. Eventually, this data will be populated.
      #+BEGIN_SRC js
      // app/components/Profile.js
      var React = require('react');
@@ -758,7 +758,7 @@
           render: function() {
             return (
               <section>
-                <h2>Notes</h2>
+                <h2>Notes for { this.props.username }</h2>
                 <dl>
                   <dt>Notes</dt>
                   <dd>{ this.props.notes }</dd>
@@ -772,8 +772,8 @@
       #+END_SRC
 
    2. Update Profile.js to use our new Notes component. Pass in the
-      notes state to our notes component, adding in some dummy data in
-      initialisation. 
+      notes state to our notes component, as well as the username. For
+      the moment, add in some dummy data in getInitialState. 
       #+BEGIN_SRC js
         // app/components/Profile.js
 
@@ -810,7 +810,8 @@
                   <Repos repos={ this.state.repos } />
                 </div>
                 <div className="col-md-4">
-                  <Notes notes={ this.state.notes } />
+                  <Notes username={ this.props.params.username }
+                         notes={ this.state.notes } />
                 </div>
               </div>
             );
@@ -821,3 +822,547 @@
       #+END_SRC
 
    3. Test it out!
+* Using ReactFire to add Data Persistence
+** Dependencies
+  1. Install [[https://github.com/firebase/ReactFire][ReactFire]]. We use this to populate the state of our React
+     components. It integrates with [[https://www.firebase.com/][Firebase]]. Our component state can
+     be bound to a Firebase endpoint, so whenever the endpoint
+     changes, our state is updated.
+     #+BEGIN_SRC sh
+     npm install --save reactfire@0.5.1
+     #+END_SRC
+
+  2. Install Firebase.
+     #+BEGIN_SRC sh
+     npm install --save firebase@2.3.2
+     #+END_SRC
+
+** Add the ReactFire Mixin
+  1. Add the ReactFireMixin to Profile.js. We will use ReactFire as a
+     Mixin. To do this, give our React class a Mixin property, where
+     its value will be an array with ReactFireMixin. 
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile; 
+     #+END_SRC
+
+** Implement componentDidMount
+  1. Add the [[https://facebook.github.io/react/docs/component-specs.html#mounting-componentdidmount][componentDidMount]] method. It is part of the lifecycle
+     events of a React component. It is only invoked once, just after
+     it is rendered. This is where you will perform things like AJAX
+     requests, set-up Firebase listeners, etc. 
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ReactFireMixin],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+          
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;      
+     #+END_SRC
+
+  2. Sign up and create a new project at [[https://www.firebase.com/][Firebase]] (or use the default
+     one provided in your account dashboard). Warning: you will need a
+     Google account. To create some seed data, click the green + next to
+     the app name once you are in the Dashboard for your App, type in
+     a key, and add a value - E.g. I added `jessicace` as a key with
+     `[ "Cool note 1", "Cool note 2" ]` as the value.
+
+  3. Require Firebase and create a new instance of Firebase in
+     componentDidMount. This will return an object that we assign to
+     this.ref.
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;      
+     #+END_SRC
+
+  4. Add a childRef by accessing the Firebase ref we just created, and
+     passing in the username property to its child() method. This is
+     specific to Firebase - we are telling our Firebase ref to go to
+     Firebase, and look for whatever value we just passed to
+     child(). We're looking for a child that is equivalent to whatever
+     username we searched for, i.e., the username's  specific endpoint
+     in our Firebase application. Does this make any sense?
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;     
+     #+END_SRC
+
+  5. Bind our local state to the Firebase endpoint. We can use
+     this.bindAsArray() for this. We can use this.bindAsArray() as it
+     was added by the ReactFireMixin. It takes two arguments:
+     1) Our child reference. For us, this is the reference to a specific
+        user's endpoint in Firebase that we just created.
+     2) The state property that we wish to bind to. In our case, it is
+        notes. 
+     So when this component mounts, our local state of notes should be
+     consistent with the state in Firebase. Whenever the endpoint
+     changes, our local state is updated as well.
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;    
+     #+END_SRC
+
+** Implement componentWillUnmount
+  1. Add the [[https://facebook.github.io/react/docs/component-specs.html#unmounting-componentwillunmount][componentWillUnmount]] method. This is invoked just before
+     the component is unmounted from the DOM. You use this for
+     housekeeping - get rid of timers for AJAX calls, et
+     cetera.
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+         },
+         componentWillUnmount: function() {
+
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos repos={ this.state.repos } />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes } />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;    
+     #+END_SRC
+
+  2. Use componentWillUnmount() to tell the component to unbind the
+     state property 'notes' from our Firebase endpoint. Whenever our
+     component is unmounted, we call the unbind method on our
+     ReactFire instance, so it doesn't keep trying to update
+     something that doesn't exist. 
+    #+BEGIN_SRC js
+      // app/components/Profile.js
+
+      var Firebase = require('Firebase');
+      var React = require('react');
+      var ReactFireMixin = require('reactfire');
+      var Notes = require('./Notes/Notes');
+      var Repos = require('./GitHub/Repos');
+      var UserProfile = require('./GitHub/UserProfile');
+
+      var Profile = React.createClass({
+        mixins: [ ReactFireMixin ],
+        getInitialState: function() {
+          return {
+            notes: [
+              'Cool Note 1',
+              'Cool Note 2'
+            ],
+            bio: {
+              name: 'Jessica'
+            },
+            repos: [
+              'Cool Repo 1',
+              'Cool Repo 2'
+            ]
+          };
+        },
+        componentDidMount: function() {
+          this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+          var childRef = this.ref.child(this.props.params.username);
+          this.bindAsArray(childRef, 'notes');
+        },
+        componentWillUnmount: function() {
+          this.unbind('notes');
+        },
+        render: function() {
+          return (
+            <div className="row">
+              <div className="col-md-4">
+                <UserProfile username={ this.props.params.username }
+                             bio={ this.state.bio }
+                />
+              </div>
+              <div className="col-md-4">
+                <Repos repos={ this.state.repos } />
+              </div>
+              <div className="col-md-4">
+                <Notes username={ this.props.params.username }
+                       notes={ this.state.notes } />
+              </div>
+            </div>
+          );
+        }
+      });
+
+      module.exports = Profile;    
+    #+END_SRC      
+
+** Create the NotesList Component
+  1. Create a NotesList component - let the Notes component be a
+     container, while NotesList can focus on creating the list
+     itself. For now, it can just render an empty unordered list.
+     #+BEGIN_SRC js
+     // app/components/Notes/NotesList.js
+
+     var React = require('react');
+      
+     var NotesList = React.createClass({
+       render: function() {
+         return (
+           <ul className="list-group">
+              
+           </ul>
+         );
+       }
+     });
+
+     module.exports = NotesList;
+     #+END_SRC
+
+  2. Create our list items using [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map?redirectlocale=en-US&redirectslug=JavaScript%252FReference%252FGlobal_Objects%252FArray%252Fmap][Array.prototype.map()]]. This uses one
+     array to generate a new Array. To use map, we pass in a callback
+     function and up to three arguments - the current element being
+     processed in the Array, the index item of the current element,
+     the array object we have called map upon. We don't need the
+     original array, so our callback will only pass in the first two
+     arguments, the note item and its index. This is necessary as
+     React doesn't know how to render the data Firebase has provided.
+     #+BEGIN_SRC js
+     // app/components/Notes/NotesList.js
+
+     var React = require('react');
+      
+     var NotesList = React.createClass({
+       render: function() {
+         var notes = this.props.notes.map(function(note, index) {
+          
+         });
+         return (
+           <ul className="list-group">
+             { notes }
+           </ul>
+         );
+       }
+     });
+
+     module.exports = NotesList;
+     #+END_SRC
+
+  3. Return the list item with our note. The inner text of our list
+     item is the note itself - this is necessary due to the way
+     Firebase returns data to us. We have used the array index as our
+     list item key. A key is used by React for uniquely identifying
+     each child of a component. See [[https://facebook.github.io/react/docs/multiple-components.html#dynamic-children][Dynamic Children]] in the React
+     documentation for more information.
+     #+BEGIN_SRC js
+     // app/components/Notes/NotesList.js
+
+     var React = require('react');
+      
+     var NotesList = React.createClass({
+       render: function() {
+         var notes = this.props.notes.map(function(note, index) {
+           return (
+             <li className="list-group-item" key={ index }>
+               { note['.value'] }
+             </li>
+           );
+         });
+         return (
+           <ul className="list-group">
+             { notes }
+           </ul>
+         );
+       }
+     });
+
+     module.exports = NotesList;      
+     #+END_SRC
+
+** Update the Notes Component to use NotesList
+  1. Update our Notes component to use our new NotesList component.
+     #+BEGIN_SRC js
+       // app/components/Notes/Notes.js
+
+       var React = require('react');
+       var NotesList = require('./NotesList');
+
+       var Notes = React.createClass({
+         render: function() {
+           return (
+             <section>
+               <h2>Notes for { this.props.username }</h2>
+               <NotesList notes={ this.props.notes } />
+             </section>
+           );
+         }
+       });
+
+       module.exports = Notes;
+     #+END_SRC
+
+  2. Give it a test! Add some data to Firebase if you haven't yet~
