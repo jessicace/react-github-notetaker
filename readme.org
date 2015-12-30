@@ -688,7 +688,7 @@
           render: function() {
             return (
               <section>
-                <h2>Repos</h2>
+                <h2>Repos for { this.props.username }</h2>
                 <dl>
                   <dt>Repos</dt>
                   <dd>{ this.props.repos }</dd>
@@ -733,7 +733,9 @@
                     />
                   </div>
                   <div className="col-md-4">
-                    <Repos repos={ this.state.repos } />
+                    <Repos username={ this.props.params.username }
+                           repos={ this.state.repos } 
+                    />
                   </div>
                   <div className="col-md-4">
                     Notes Component
@@ -807,11 +809,14 @@
                   />
                 </div>
                 <div className="col-md-4">
-                  <Repos repos={ this.state.repos } />
+                  <Repos username={ this.props.params.username }
+                         repos={ this.state.repos } 
+                  />
                 </div>
                 <div className="col-md-4">
                   <Notes username={ this.props.params.username }
-                         notes={ this.state.notes } />
+                         notes={ this.state.notes } 
+                  />
                 </div>
               </div>
             );
@@ -876,11 +881,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos } 
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes } 
+                 />
                </div>
              </div>
            );
@@ -933,11 +941,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos } 
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes } 
+                 />
                </div>
              </div>
            );
@@ -996,11 +1007,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos } 
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes } 
+                 />
                </div>
              </div>
            );
@@ -1056,11 +1070,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos } 
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes } 
+                 />
                </div>
              </div>
            );
@@ -1121,11 +1138,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos } 
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes }
+                 />
                </div>
              </div>
            );
@@ -1184,11 +1204,14 @@
                  />
                </div>
                <div className="col-md-4">
-                 <Repos repos={ this.state.repos } />
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos }
+                 />
                </div>
                <div className="col-md-4">
                  <Notes username={ this.props.params.username }
-                        notes={ this.state.notes } />
+                        notes={ this.state.notes }
+                 />
                </div>
              </div>
            );
@@ -1247,11 +1270,14 @@
                 />
               </div>
               <div className="col-md-4">
-                <Repos repos={ this.state.repos } />
+                <Repos username={ this.props.params.username }
+                       repos={ this.state.repos }
+                />
               </div>
               <div className="col-md-4">
                 <Notes username={ this.props.params.username }
-                       notes={ this.state.notes } />
+                       notes={ this.state.notes }
+                />
               </div>
             </div>
           );
@@ -1366,3 +1392,198 @@
      #+END_SRC
 
   2. Give it a test! Add some data to Firebase if you haven't yet~
+* Component Validation with PropTypes
+  1. Add propTypes to the Repos component. We add a propTypes object
+     to our component to ensure properties passed to our component are
+     of a certain type, or are required. Part of making [[https://facebook.github.io/react/docs/reusable-components.html][reusable
+     components]] is ensuring that we validate props so that we do not
+     accidentally break components. Note that propTypes are only
+     checked in development mode, for performance reasons.
+     #+BEGIN_SRC js
+       // app/components/GitHub/Repos.js
+
+       var React = require('react');
+
+       var Repos = React.createClass({
+         propTypes: {
+         
+         },
+         render: function() {
+           return (
+             <section>
+               <h2>Repos</h2>
+               <dl>
+                 <dt>Repos</dt>
+                 <dd>{ this.props.repos }</dd>
+               </dl>
+             </section>
+           );
+         }
+       });
+
+       module.exports = Repos;
+
+     #+END_SRC
+
+  2. Fill in propTypes by using [[https://facebook.github.io/react/docs/top-level-api.html#react.proptypes][React.PropTypes]]. React.PropTypes
+     includes types for validation, to be used by your propTypes
+     object. The username should be a string, and the repos should be
+     an array. If you do not pass in the correct props, you will get
+     an error in the JavaScript console, which is useful in
+     debugging. If we dropped 'isRequired', that means that the prop
+     is optional. 
+     #+BEGIN_SRC js
+       // app/components/GitHub/Repos.js
+
+       var React = require('react');
+
+       var Repos = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           repos: React.PropTypes.array.isRequired
+         },
+         render: function() {
+           return (
+             <section>
+               <h2>Repos</h2>
+               <dl>
+                 <dt>Repos</dt>
+                 <dd>{ this.props.repos }</dd>
+               </dl>
+             </section>
+           );
+         }
+       });
+
+       module.exports = Repos;
+
+     #+END_SRC
+
+     - Here's an example of validations you can perform, taken from
+       the React documentation ([[https://facebook.github.io/react/docs/reusable-components.html][reusable components]]).
+       #+BEGIN_SRC js
+         React.createClass({
+           propTypes: {
+             // You can declare that a prop is a specific JS primitive. By default, these
+             // are all optional.
+             optionalArray: React.PropTypes.array,
+             optionalBool: React.PropTypes.bool,
+             optionalFunc: React.PropTypes.func,
+             optionalNumber: React.PropTypes.number,
+             optionalObject: React.PropTypes.object,
+             optionalString: React.PropTypes.string,
+
+             // Anything that can be rendered: numbers, strings, elements or an array
+             // (or fragment) containing these types.
+             optionalNode: React.PropTypes.node,
+
+             // A React element.
+             optionalElement: React.PropTypes.element,
+
+             // You can also declare that a prop is an instance of a class. This uses
+             // JS's instanceof operator.
+             optionalMessage: React.PropTypes.instanceOf(Message),
+
+             // You can ensure that your prop is limited to specific values by treating
+             // it as an enum.
+             optionalEnum: React.PropTypes.oneOf(['News', 'Photos']),
+
+             // An object that could be one of many types
+             optionalUnion: React.PropTypes.oneOfType([
+               React.PropTypes.string,
+               React.PropTypes.number,
+               React.PropTypes.instanceOf(Message)
+             ]),
+
+             // An array of a certain type
+             optionalArrayOf: React.PropTypes.arrayOf(React.PropTypes.number),
+
+             // An object with property values of a certain type
+             optionalObjectOf: React.PropTypes.objectOf(React.PropTypes.number),
+
+             // An object taking on a particular shape
+             optionalObjectWithShape: React.PropTypes.shape({
+               color: React.PropTypes.string,
+               fontSize: React.PropTypes.number
+             }),
+
+             // You can chain any of the above with `isRequired` to make sure a warning
+             // is shown if the prop isn't provided.
+             requiredFunc: React.PropTypes.func.isRequired,
+
+             // A value of any data type
+             requiredAny: React.PropTypes.any.isRequired,
+
+             // You can also specify a custom validator. It should return an Error
+             // object if the validation fails. Don't `console.warn` or throw, as this
+             // won't work inside `oneOfType`.
+             customProp: function(props, propName, componentName) {
+               if (!/matchme/.test(props[propName])) {
+                 return new Error('Validation failed!');
+               }
+             }
+           },
+           /* ... */
+         });
+       #+END_SRC
+
+  3. Add propTypes to our UserProfile component as well. Username
+     is a required string, and bio is a required object.
+     #+BEGIN_SRC js
+       // app/components/GitHub/UserProfile.js
+
+       var React = require('react');
+
+       var UserProfile = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           bio: React.PropTypes.object.isRequired
+         },
+         render: function() {
+           return (
+             <section>
+               <h2>User Profile</h2>
+               <dl>
+                 <dt>Username</dt> 
+                 <dd>{ this.props.username }</dd>
+                 <dt>Bio</dt>
+                 <dd>{ this.props.bio.name }</dd>
+               </dl>
+             </section>
+           );
+         }
+       });
+
+       module.exports = UserProfile;
+     #+END_SRC
+
+  4. Add propTypes to our Notes component. The username is a required
+     string, and notes is a required array.
+     #+BEGIN_SRC js
+       // app/components/Notes/Notes.js
+
+       var React = require('react');
+       var NotesList = require('./NotesList');
+
+       var Notes = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           notes: React.PropTypes.array.isRequired
+         },
+         render: function() {
+           return (
+             <section>
+               <h2>Notes for { this.props.username }</h2>
+               <NotesList notes={ this.props.notes } />
+             </section>
+           );
+         }
+       });
+
+       module.exports = Notes;
+
+     #+END_SRC
+
+  5. Test that everything is working. You can try altering/removing
+     some of the props passed in by the Profile component, and
+     ensuring that you get errors.

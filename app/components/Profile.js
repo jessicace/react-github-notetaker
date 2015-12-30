@@ -39,7 +39,9 @@ var Profile = React.createClass({
           />
         </div>
         <div className="col-md-4">
-          <Repos repos={ this.state.repos } />
+          <Repos username={ this.props.params.username }
+                 repos={ this.state.repos }
+          />
         </div>
         <div className="col-md-4">
           <Notes username={ this.props.params.username }

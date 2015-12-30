@@ -24415,7 +24415,9 @@
 	      React.createElement(
 	        'div',
 	        { className: 'col-md-4' },
-	        React.createElement(Repos, { repos: this.state.repos })
+	        React.createElement(Repos, { username: this.props.params.username,
+	          repos: this.state.repos
+	        })
 	      ),
 	      React.createElement(
 	        'div',
@@ -25087,6 +25089,10 @@
 	var Notes = React.createClass({
 	  displayName: 'Notes',
 
+	  propTypes: {
+	    username: React.PropTypes.string.isRequired,
+	    notes: React.PropTypes.array.isRequired
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'section',
@@ -25144,6 +25150,10 @@
 	var Repos = React.createClass({
 	  displayName: 'Repos',
 
+	  propTypes: {
+	    username: React.PropTypes.string.isRequired,
+	    repos: React.PropTypes.array.isRequired
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'section',
@@ -25151,7 +25161,8 @@
 	      React.createElement(
 	        'h2',
 	        null,
-	        'Repos'
+	        'Repos for ',
+	        this.props.username
 	      ),
 	      React.createElement(
 	        'dl',
@@ -25184,6 +25195,10 @@
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
 
+	  propTypes: {
+	    username: React.PropTypes.string.isRequired,
+	    bio: React.PropTypes.object.isRequired
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'section',
