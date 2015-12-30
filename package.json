@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Following the Build Your First React.js App course available on Egghead.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jessicace/react-github-notetaker.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,7 +20,9 @@
     "webpack": "^1.12.9"
   },
   "dependencies": {
+    "history": "^1.13.1",
     "react": "^0.14.3",
-    "react-dom": "^0.14.3"
+    "react-dom": "^0.14.3",
+    "react-router": "^1.0.1"
   }
 }

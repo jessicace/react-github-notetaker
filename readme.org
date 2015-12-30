@@ -1,3 +1,7 @@
+* About
+  This is my following of the [[https://egghead.io/series/build-your-first-react-js-application][Build Your First React.js App]]
+  course. I've varied the order of some things and expanded where I
+  felt it was appropriate.
 * Up and Running with React and Webpack
 ** Initialisation / Install dependencies 
   1. Initialise our package.json file. Go through the interactive
@@ -177,3 +181,241 @@
       ./node_modules/.bin/webpack -w
       #+END_SRC
    2. Open up public/index.html and you should see Hello World!
+* Basic Routing with React Router
+** Updating Our Components
+  1. Create a new component called Home. It will be the component we see
+     when we first start up the application. Note that we use
+     className, not class, as despite the JSX, this is a JavaScript
+     file, and class is a reserved word in JavaScript.
+     #+BEGIN_SRC js
+       // app/components/Home.js
+
+       var React = require('react');
+
+       var Home = React.createClass({
+         render: function() {
+           return (
+             <h2 className="text-center">
+               Search by GitHub Username
+             </h2>
+           );
+         }
+       });
+
+       module.exports = Home;
+     #+END_SRC
+
+  2. Remove ReactDOM.render from main.js, and export the Main
+     component instead. This is because we want React-Router to handle
+     our routing. 
+     #+BEGIN_SRC js
+       // app/components/Main.js
+       var React = require('react');
+       
+       var Main = React.createClass({
+         render: function() {
+           return (
+             <div>
+               Hello World!
+             </div>
+           );
+         }
+       });
+
+       module.exports = Main;
+     #+END_SRC
+** Setting up React Router and our Routes file
+  1. Install [[https://github.com/rackt/react-router][react-router]] and [[https://github.com/rackt/history][history]]. React Router keeps our UI in
+     sync with the URL. History is a dependency of React Router, so
+     you need both. History allows management of session history.
+     #+BEGIN_SRC sh
+     npm install --save react-router@1.0.1 history@1.13.1
+     #+END_SRC
+
+  2. Create a config folder within our app folder, where we will put
+     our routes.js file. This file gives instructions to our
+     router. Given a certain path, the router will render the
+     appropriate component. We require all the components we have
+     built so far. We also require our Router. The Router has a Route
+     property as well that we will be using. 
+     #+BEGIN_SRC js
+       // app/config/routes.js
+
+       var React = require('react');
+       var Main = require('../components/Main');
+       var Home = require('../components/Home');
+       var Router = require('react-router');
+       var Route = Router.Route;
+     #+END_SRC
+
+  3. Export our root path- these are the instructions for our
+     router. React Router allows us to write our routes with
+     JSX. Whenever someone goes to the root component of our 
+     application, it will render our Main component (which says Hello
+     World!).
+     #+BEGIN_SRC js
+       // app/config/routes.js
+
+       var React = require('react');
+       var Main = require('../components/Main');
+       var Home = require('../components/Home');
+       var Router = require('react-router');
+       var Route = Router.Route;
+
+       module.exports = (
+         <Route path="/" component={ Main }></Route>
+       );     
+     #+END_SRC
+
+  4. Require the IndexRoute from Router. IndexRoute allows us to give
+     a default path. It is a child route of the root route - every
+     time we visit the root path, the Home component will be rendered.
+
+      #+BEGIN_SRC js
+        // app/config/routes.js
+
+         var React = require('react');
+         var Main = require('../components/Main');
+         var Home = require('../components/Home');
+         var Router = require('react-router');
+         var Route = Router.Route;
+         var IndexRoute = Router.IndexRoute;
+
+         module.exports = (
+           <Route path="/" component={ Main }>
+             <IndexRoute component={ Home } />
+           </Route>
+         ); 
+      #+END_SRC
+
+** The App Entry Point
+  1. Create the App file. This will be in charge of our rendering, so
+     we need ReactDOM, as well as React Router and the routes file we
+     created.
+     #+BEGIN_SRC js
+     // app/App.js
+     var React = require('react');
+     var ReactDOM = require('react-dom');
+     var Router = require('react-router').Router;
+     var routes = require('./config/routes');
+     #+END_SRC
+
+  2. Like how we initially used ReactDOM for rendering to our page in
+     the Main component, implement the rendering in our App.js
+     file. This time, however, we will be passing in the Router
+     component, not the main component. Within the Router, we are
+     telling it to use our routes configuration.
+     #+BEGIN_SRC js
+     // app/App.js
+     var React = require('react');
+     var ReactDOM = require('react-dom');
+     var Router = require('react-router').Router;
+     var routes = require('./config/routes');
+
+     ReactDOM.render(
+       <Router>{ routes }</Router>,
+       document.getElementById('app')
+     );
+     #+END_SRC
+
+  3. Update the webpack.config.js file. We need to change the entry
+     point, as it is no longer ./app/components/Main.js, but
+     app/App.js.
+     #+BEGIN_SRC js
+       // webpack.config.js
+
+       module.exports = {
+         entry: "./app/App.js",
+         output: {
+           filename: "public/bundle.js"
+         },
+         module: {
+           loaders: [
+             {
+               test: /\.jsx?$/,
+               exclude: /(node_modules|bower_components)/,
+               loader: 'babel',
+               query: {
+                 presets: [
+                   'react', 
+                   'es2015'
+                 ]
+               }
+             }
+           ]
+         }
+       }
+
+     #+END_SRC
+
+  4. Navigate to public/index.html (after running webpack, if you
+     stopped it before!) and you should see... the same thing as before.
+     #+BEGIN_SRC sh
+     ./node_modules/.bin/webpack -w
+     #+END_SRC
+
+** Use Our Router
+  1. Let's add a menu bar to our Main component.
+     #+BEGIN_SRC js
+       // app/components/Main.js
+
+       var React = require('react');
+
+       var Main = React.createClass({
+         render: function() {
+           return (
+             <div className="main-container">
+               <nav className="navbar navbar-default" 
+                    role="navigation">
+                 <div className="col-sm-7 col-sm-offset-2" 
+                      style={{ marginTop: 15 }}>
+                    MENU
+                 </div>
+               </nav>
+               <div className="container">
+                 Hello World!
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Main;
+     #+END_SRC
+
+  2. Here is where React Router comes in handy. Replace Hello World!
+     with this.props.children. this.props.children will be replaced
+     with whatever the active component of the Router is. So, our
+     Router will render this Main component, but within it, we are also
+     getting it to render something else inside it - so far, our
+     routes.js file is telling it to render our Home component, so
+     you'll see 'Search By GitHub Username Above'. 
+     #+BEGIN_SRC js
+       // app/components/Main.js
+
+       var React = require('react');
+
+       var Main = React.createClass({
+         render: function() {
+           return (
+             <div className="main-container">
+               <nav className="navbar navbar-default" 
+                    role="navigation">
+                 <div className="col-sm-7 col-sm-offset-2" 
+                      style={{ marginTop: 15 }}>
+                    MENU
+                 </div>
+               </nav>
+               <div className="container">
+                 { this.props.children }
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Main;      
+     #+END_SRC
+
+  4. Let's test it out! You should see a menu bar and 'Search by
+     GitHub Username' when you navigate to public/index.html.
