@@ -419,3 +419,405 @@
 
   4. Let's test it out! You should see a menu bar and 'Search by
      GitHub Username' when you navigate to public/index.html.
+* State, Props, and Thinking in React
+** Profile Component
+  1. Create the Profile component. We are just giving it static text
+     for the moment.
+     #+BEGIN_SRC js
+     // app/components/Profile.js
+     var React = require('react');
+     
+     var Profile = React.createClass({
+       render: function() {
+         return (
+           <div className="row">
+             <div className="col-md-4">
+               User Profile Component
+             </div>
+             <div className="col-md-4">
+               Repos Component
+             </div>
+             <div className="col-md-4">
+               Notes Component
+             </div>
+           </div>
+         );
+       }
+     });
+
+     module.exports = Profile;
+     #+END_SRC
+
+  2. Add the [[https://facebook.github.io/react/docs/component-specs.html#getinitialstate][getInitialState]] method. This is invoked once, before the
+     component is rendered. This sets the initial state of the
+     component, obviously. Usually, we initialise with empty
+     data. Eventually, this data will be populated.
+     #+BEGIN_SRC js
+     // app/components/Profile.js
+     var React = require('react');
+     
+     var Profile = React.createClass({
+       getInitialState: function() {
+         return {
+           notes: [],
+           bio: {},
+           repos: []
+         };
+       },
+       render: function() {
+         return (
+           <div className="row">
+             <div className="col-md-4">
+               User Profile Component
+             </div>
+             <div className="col-md-4">
+               Repos Component
+             </div>
+             <div className="col-md-4">
+               Notes Component
+             </div>
+           </div>
+         );
+       }
+     });
+
+     module.exports = Profile;
+     #+END_SRC
+
+  3. Add our new Profile component to our Route
+     configuration. Whenever someone visits profile/random-username, we will
+     render the Profile component. 
+     #+BEGIN_SRC js
+       // app/config/routes.js
+
+       var React = require('react');
+       var Main = require('../components/Main');
+       var Home = require('../components/Home');
+       var Profile = require('../components/Profile');
+       var Router = require('react-router');
+       var Route = Router.Route;
+       var IndexRoute = Router.IndexRoute;
+
+       module.exports = (
+         <Route path="/" component={ Main }>
+           <Route path="profile/:username" component={ Profile } />
+           <IndexRoute component={ Home } />
+         </Route>
+       ); 
+
+     #+END_SRC
+
+  4. Test it out by visiting the page and adding /profile/jessicace
+     (or whatever) after the generated hash (it's used by React
+     Router). You should see 'User Profile Component', 'Repos
+     Component' and 'Notes Component' rendered instead of the heading.
+
+** Props
+   1. Access the username from the URL inside our Profile component.
+      Through props, we can access data in our parent. This is how
+      React Router works. We want to get the username from our URL. If
+      you console.log this.props, you will see that props is an
+      object. One of the object's properties is params, which in turn
+      is an object where we can get the username value from.
+      #+BEGIN_SRC js
+        // app/components/Profile.js
+        var React = require('react');
+
+        var Profile = React.createClass({
+          getInitialState: function() {
+            return {
+              notes: [],
+              bio: {},
+              repos: []
+            };
+          },
+          render: function() {
+            return (
+              <div className="row">
+                <div className="col-md-4">
+                  User Profile Component --> { this.props.params.username }
+                </div>
+                <div className="col-md-4">
+                  Repos Component
+                </div>
+                <div className="col-md-4">
+                  Notes Component
+                </div>
+              </div>
+            );
+          }
+        });
+
+        module.exports = Profile;      
+      #+END_SRC
+
+** GitHub UserProfile Component
+   1. Create a UserProfile.js file inside a new folder called GitHub, which
+      will be inside our components folder.
+      #+BEGIN_SRC js
+      // app/components/GitHub/UserProfile.js
+
+      var React = require('react');
+
+      var UserProfile = React.createClass({
+        render: function() {
+          return (
+            <div>I am a UserProfile!</div>
+          );
+        }
+      });
+
+      module.exports = UserProfile;
+      #+END_SRC
+
+   2. Change our Profile component to use our newly created Repos
+      component. 
+      #+BEGIN_SRC js
+        // app/components/Profile.js
+        var React = require('react');
+        var UserProfile = require('./GitHub/UserProfile');
+
+        var Profile = React.createClass({
+          getInitialState: function() {
+            return {
+              notes: [],
+              bio: {},
+              repos: []
+            };
+          },
+          render: function() {
+            return (
+              <div className="row">
+                <div className="col-md-4">
+                  <UserProfile />
+                </div>
+                <div className="col-md-4">
+                  Repos Component
+                </div>
+                <div className="col-md-4">
+                  Notes Component
+                </div>
+              </div>
+            );
+          }
+        });
+
+        module.exports = Profile;       
+      #+END_SRC
+
+   3. We do not want to simply render our Profile component,
+      however. That's not very useful. We want to pass in data. We can
+      pass in the username like we did earlier, and we can also pass
+      in whatever is relevant from our initial state- in this case,
+      the bio. Add some dummy data to our bio to test it out after this.
+      #+BEGIN_SRC js
+        // app/components/Profile.js
+        var React = require('react');
+        var UserProfile = require('./GitHub/UserProfile');
+
+        var Profile = React.createClass({
+          getInitialState: function() {
+            return {
+              notes: [],
+              bio: {
+                name: 'Jessica'
+              },
+              repos: []
+            };
+          },
+          render: function() {
+            return (
+              <div className="row">
+                <div className="col-md-4">
+                  <UserProfile username={ this.props.params.username }
+                               bio={ this.state.bio }
+                  />
+                </div>
+                <div className="col-md-4">
+                  Repos Component
+                </div>
+                <div className="col-md-4">
+                  Notes Component
+                </div>
+              </div>
+            );
+          }
+        });
+
+        module.exports = Profile; 
+      
+      #+END_SRC
+
+   4. Update the UserProfile component, otherwise nothing will change
+      in the UI if we aren't accessing the props. Once we access the
+      props passed to it, we can make our component dynamic.
+      #+BEGIN_SRC js
+      // app/components/GitHub/UserProfile.js
+
+      var React = require('react');
+
+      var UserProfile = React.createClass({
+        render: function() {
+          return (
+            <section>
+              <h2>User Profile</h2>
+              <dl>
+                <dt>Username</dt> 
+                <dd>{ this.props.username }</dd>
+                <dt>Bio</dt>
+                <dd>{ this.props.bio.name }</dd>
+              </dl>
+            </section>
+          );
+        }
+      });
+      
+      module.exports = UserProfile;
+      #+END_SRC
+
+** GitHub Repos Component
+   1. We are doing the same thing as before, except with a Repos
+      component. Create a Repos.js file inside the GitHub folder. We
+      access the repos via props.
+      #+BEGIN_SRC js
+        // app/components/GitHub/Repos.js
+
+        var React = require('react');
+
+        var Repos = React.createClass({
+          render: function() {
+            return (
+              <section>
+                <h2>Repos</h2>
+                <dl>
+                  <dt>Repos</dt>
+                  <dd>{ this.props.repos }</dd>
+                </dl>
+              </section>
+            );
+          }
+        });
+
+        module.exports = Repos;
+      #+END_SRC
+
+   2. Update Profile.js to use our new Repos component. Pass in the
+      repos state to our Repos component, adding in some dummy data in
+      initialisation. 
+      #+BEGIN_SRC js
+        // app/components/Profile.js
+
+        var React = require('react');
+        var Repos = require('./GitHub/Repos');
+        var UserProfile = require('./GitHub/UserProfile');
+
+        var Profile = React.createClass({
+          getInitialState: function() {
+            return {
+              notes: [],
+                bio: {
+                  name: 'Jessica'
+                },
+                repos: [
+                  'Cool Repo 1',
+                  'Cool Repo 2'
+                ]
+              };
+            },
+            render: function() {
+              return (
+                <div className="row">
+                  <div className="col-md-4">
+                    <UserProfile username={ this.props.params.username }
+                                 bio={ this.state.bio }
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <Repos repos={ this.state.repos } />
+                  </div>
+                  <div className="col-md-4">
+                    Notes Component
+                  </div>
+                </div>
+              );
+            }
+        });
+
+        module.exports = Profile; 
+      #+END_SRC
+
+** Notes Component
+   1. Create our Notes component. Create a Notes.js file inside a new
+      folder called Notes. Like before, access notes via props.
+      #+BEGIN_SRC js
+        // app/components/Notes/Notes.js
+
+        var React = require('react');
+
+        var Notes = React.createClass({
+          render: function() {
+            return (
+              <section>
+                <h2>Notes</h2>
+                <dl>
+                  <dt>Notes</dt>
+                  <dd>{ this.props.notes }</dd>
+                </dl>
+              </section>
+            );
+          }
+        });
+
+        module.exports = Notes;
+      #+END_SRC
+
+   2. Update Profile.js to use our new Notes component. Pass in the
+      notes state to our notes component, adding in some dummy data in
+      initialisation. 
+      #+BEGIN_SRC js
+        // app/components/Profile.js
+
+        var React = require('react');
+        var Notes = require('./Notes/Notes');
+        var Repos = require('./GitHub/Repos');
+        var UserProfile = require('./GitHub/UserProfile');
+
+        var Profile = React.createClass({
+          getInitialState: function() {
+            return {
+              notes: [
+                'Cool Note 1',
+                'Cool Note 2'
+              ],
+              bio: {
+                name: 'Jessica'
+              },
+              repos: [
+                'Cool Repo 1',
+                'Cool Repo 2'
+              ]
+            };
+          },
+          render: function() {
+            return (
+              <div className="row">
+                <div className="col-md-4">
+                  <UserProfile username={ this.props.params.username }
+                               bio={ this.state.bio }
+                  />
+                </div>
+                <div className="col-md-4">
+                  <Repos repos={ this.state.repos } />
+                </div>
+                <div className="col-md-4">
+                  <Notes notes={ this.state.notes } />
+                </div>
+              </div>
+            );
+          }
+        });
+
+        module.exports = Profile; 
+      #+END_SRC
+
+   3. Test it out!
