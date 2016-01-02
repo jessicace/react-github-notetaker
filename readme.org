@@ -2496,3 +2496,211 @@
      view- this is because an Object is not a valid React child. For
      now, update the UserProfile and Repos components to console.log
      the results instead of rendering them.
+
+* Rendering a UI of Dynamic Data
+  1. Create an array of list items for each user repository so that we
+     can render them. Use Array.prototype.map again- the first
+     parameter is the repo itself, and the second is the
+     index. Remember that whenever we map over something, React
+     requires a key. It's how React optimises when you remove or move
+     something in the list.
+     #+BEGIN_SRC js
+       // app/components/GitHub/Repos.js
+
+       var React = require('react');
+
+       var Repos = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           repos: React.PropTypes.array.isRequired
+         },
+         render: function() {
+           var repos = this.props.repos.map(function(repo, index) {
+             return (
+               <li className="list-group-item" key={ index }>
+               </li>
+             );
+           });
+           return (
+             <section>
+               <h2>Repos for { this.props.username }</h2>
+             </section>
+           );
+         }
+       });
+
+       module.exports = Repos;
+     #+END_SRC
+
+  2. Conditionally render the properties of each repo in the list
+     item. If the repo has an html_url property, we can render a heading with a link to the 
+     repository. Because not every repository has a URL associated
+     with it, and React JSX does not support if statements, we use the
+     && operator for this conditional logic. 
+          #+BEGIN_SRC js
+       // app/components/GitHub/Repos.js
+
+       var React = require('react');
+
+       var Repos = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           repos: React.PropTypes.array.isRequired
+         },
+         render: function() {
+           var repos = this.props.repos.map(function(repo, index) {
+             return (
+               <li className="list-group-item" key={ index }> 
+                 { 
+                   repo.html_url && 
+                   <h4>
+                     <a href={ repo.html_url }>
+                       { repo.name }
+                     </a>
+                   </h4>
+                 } {
+                   repo.description &&
+                   <p>
+                     { repo.description }
+                   </p>
+                 }
+               </li>
+             );
+           });
+           return (
+             <section>
+               <h2>Repos for { this.props.username }</h2>
+             </section>
+           );
+         }
+       });
+
+       module.exports = Repos;
+     #+END_SRC
+
+  3. Update render's return statement to use our repos list array.
+     #+BEGIN_SRC js
+       // app/components/GitHub/Repos.js
+
+       var React = require('react');
+
+       var Repos = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           repos: React.PropTypes.array.isRequired
+         },
+         render: function() {
+           var repos = this.props.repos.map(function(repo, index) {
+             return (
+               <li className="list-group-item" key={ index }> 
+                 { 
+                   repo.html_url && 
+                   <h4>
+                     <a href={ repo.html_url }>
+                       { repo.name }
+                     </a>
+                   </h4>
+                 } {
+                   repo.description &&
+                   <p>
+                     { repo.description }
+                   </p>
+                 }
+               </li>
+             );
+           });
+           return (
+             <section>
+               <h2>Repositories for { this.props.username }</h2>
+               <ul className="list-group">
+                 { repos }
+               </ul>
+             </section>
+           );
+         }
+       });
+
+       module.exports = Repos;     
+     #+END_SRC
+
+  4. We also need to update our UserProfile component in a similar
+     fashion. As not every User bio has all the following properties,
+     we conditionally render each one. 
+     #+BEGIN_SRC js
+       // app/components/GitHub/UserProfile.js
+
+       var React = require('react');
+
+       var UserProfile = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           bio: React.PropTypes.object.isRequired
+         },
+         render: function() {
+           console.log('BIO', this.props.bio);
+           return (
+             <section>
+               <h2>User Profile</h2> {
+                 this.props.bio.avatar_url && 
+                 <img src={ this.props.bio.avatar_url } 
+                      alt={ `${ this.props.username }'s avatar` }
+                 />
+               }
+               <dl> 
+                 { 
+                   this.props.bio.name &&
+                   <dt>Name</dt>
+                 } {
+                   this.props.bio.name &&
+                   <dd>{ this.props.bio.name }</dd>
+                 } { 
+                   this.props.bio.login &&
+                   <dt>Username</dt>
+                 } { 
+                   this.props.bio.login &&
+                   <dd>{ this.props.bio.login }</dd>
+                 } { 
+                   this.props.bio.email &&
+                   <dt>Email</dt>
+                 } { 
+                   this.props.bio.email &&
+                   <dd>{ this.props.bio.email }</dd>
+                 } { 
+                   this.props.bio.location &&
+                   <dt>Location</dt>
+                 } { 
+                   this.props.bio.location &&
+                   <dd>{ this.props.bio.location }</dd>
+                 } { 
+                   this.props.bio.company &&
+                   <dt>Company</dt>
+                 } { 
+                   this.props.bio.company &&
+                   <dd>{ this.props.bio.company }</dd>
+                 } { 
+                   this.props.bio.followers &&
+                   <dt>Followers</dt>
+                 } { 
+                   this.props.bio.followers &&
+                   <dd>{ this.props.bio.followers }</dd>
+                 } { 
+                   this.props.bio.following &&
+                   <dt>Following</dt>
+                 } { 
+                   this.props.bio.following &&
+                   <dd>{ this.props.bio.following }</dd>
+                 } { 
+                   this.props.bio.blog &&
+                   <dt>Blog</dt>
+                 } { 
+                   this.props.bio.blog &&
+                   <dd>{ this.props.bio.blog }</dd>
+                 }
+               </dl>
+             </section>
+           );
+         }
+       });
+
+       module.exports = UserProfile;
+     #+END_SRC

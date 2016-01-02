@@ -25260,27 +25260,53 @@
 /* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var React = __webpack_require__(1);
 
 	var Repos = React.createClass({
-	  displayName: 'Repos',
+	  displayName: "Repos",
 
 	  propTypes: {
 	    username: React.PropTypes.string.isRequired,
 	    repos: React.PropTypes.array.isRequired
 	  },
 	  render: function render() {
-	    console.log('REPOS', this.props.repos);
+	    var repos = this.props.repos.map(function (repo, index) {
+	      return React.createElement(
+	        "li",
+	        { className: "list-group-item", key: index },
+	        " ",
+	        repo.html_url && React.createElement(
+	          "h4",
+	          null,
+	          React.createElement(
+	            "a",
+	            { href: repo.html_url },
+	            repo.name
+	          )
+	        ),
+	        " ",
+	        repo.description && React.createElement(
+	          "p",
+	          null,
+	          repo.description
+	        )
+	      );
+	    });
 	    return React.createElement(
-	      'section',
+	      "section",
 	      null,
 	      React.createElement(
-	        'h2',
+	        "h3",
 	        null,
-	        'Repos for ',
+	        "Repositories for ",
 	        this.props.username
+	      ),
+	      React.createElement(
+	        "ul",
+	        { className: "list-group" },
+	        repos
 	      )
 	    );
 	  }
@@ -25313,18 +25339,107 @@
 	        null,
 	        'User Profile'
 	      ),
+	      ' ',
+	      this.props.bio.avatar_url && React.createElement('img', { src: this.props.bio.avatar_url,
+	        alt: this.props.username + '\'s avatar'
+	      }),
 	      React.createElement(
 	        'dl',
 	        null,
-	        React.createElement(
+	        this.props.bio.name && React.createElement(
+	          'dt',
+	          null,
+	          'Name'
+	        ),
+	        ' ',
+	        this.props.bio.name && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.name
+	        ),
+	        ' ',
+	        this.props.bio.login && React.createElement(
 	          'dt',
 	          null,
 	          'Username'
 	        ),
-	        React.createElement(
+	        ' ',
+	        this.props.bio.login && React.createElement(
 	          'dd',
 	          null,
-	          this.props.username
+	          this.props.bio.login
+	        ),
+	        ' ',
+	        this.props.bio.email && React.createElement(
+	          'dt',
+	          null,
+	          'Email'
+	        ),
+	        ' ',
+	        this.props.bio.email && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.email
+	        ),
+	        ' ',
+	        this.props.bio.location && React.createElement(
+	          'dt',
+	          null,
+	          'Location'
+	        ),
+	        ' ',
+	        this.props.bio.location && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.location
+	        ),
+	        ' ',
+	        this.props.bio.company && React.createElement(
+	          'dt',
+	          null,
+	          'Company'
+	        ),
+	        ' ',
+	        this.props.bio.company && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.company
+	        ),
+	        ' ',
+	        this.props.bio.followers && React.createElement(
+	          'dt',
+	          null,
+	          'Followers'
+	        ),
+	        ' ',
+	        this.props.bio.followers && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.followers
+	        ),
+	        ' ',
+	        this.props.bio.following && React.createElement(
+	          'dt',
+	          null,
+	          'Following'
+	        ),
+	        ' ',
+	        this.props.bio.following && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.following
+	        ),
+	        ' ',
+	        this.props.bio.blog && React.createElement(
+	          'dt',
+	          null,
+	          'Blog'
+	        ),
+	        ' ',
+	        this.props.bio.blog && React.createElement(
+	          'dd',
+	          null,
+	          this.props.bio.blog
 	        )
 	      )
 	    );
