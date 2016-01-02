@@ -24294,7 +24294,7 @@
 	var React = __webpack_require__(1);
 	var Home = __webpack_require__(209);
 	var Main = __webpack_require__(210);
-	var Profile = __webpack_require__(211);
+	var Profile = __webpack_require__(212);
 	var Router = __webpack_require__(159);
 	var Route = Router.Route;
 	var IndexRoute = Router.IndexRoute;
@@ -24332,33 +24332,32 @@
 /* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-
-	// app/components/Main.js
+	'use strict';
 
 	var React = __webpack_require__(1);
+	var SearchGitHub = __webpack_require__(211);
 
 	var Main = React.createClass({
-	  displayName: "Main",
+	  displayName: 'Main',
 
 	  render: function render() {
 	    return React.createElement(
-	      "div",
-	      { className: "main-container" },
+	      'div',
+	      { className: 'main-container' },
 	      React.createElement(
-	        "nav",
-	        { className: "navbar navbar-default",
-	          role: "navigation" },
+	        'nav',
+	        { className: 'navbar navbar-default',
+	          role: 'navigation' },
 	        React.createElement(
-	          "div",
-	          { className: "col-sm-7 col-sm-offset-2",
+	          'div',
+	          { className: 'col-sm-7 col-sm-offset-2',
 	            style: { marginTop: 15 } },
-	          "MENU"
+	          React.createElement(SearchGitHub, null)
 	        )
 	      ),
 	      React.createElement(
-	        "div",
-	        { className: "container" },
+	        'div',
+	        { className: 'container' },
 	        this.props.children
 	      )
 	    );
@@ -24373,12 +24372,61 @@
 
 	'use strict';
 
-	var Firebase = __webpack_require__(212);
 	var React = __webpack_require__(1);
-	var ReactFireMixin = __webpack_require__(213);
-	var Notes = __webpack_require__(214);
-	var Repos = __webpack_require__(217);
-	var UserProfile = __webpack_require__(218);
+	var Router = __webpack_require__(159);
+
+	var SearchGitHub = React.createClass({
+	  displayName: 'SearchGitHub',
+
+	  mixins: [Router.History],
+	  setRef: function setRef(ref) {
+	    this.usernameRef = ref;
+	  },
+	  handleSubmit: function handleSubmit() {
+	    var username = this.usernameRef.value;
+	    this.usernameRef.value = '';
+	    this.history.pushState(null, "profile/" + username);
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'col-sm-12' },
+	      React.createElement(
+	        'form',
+	        { onSubmit: this.handleSubmit },
+	        React.createElement(
+	          'div',
+	          { className: 'form-group col-sm-7' },
+	          React.createElement('input', { type: 'text', className: 'form-control', ref: this.setRef })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'form-group col-sm-5' },
+	          React.createElement(
+	            'button',
+	            { type: 'submit', className: 'btn btn-block btn-primary' },
+	            'Search GitHub'
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = SearchGitHub;
+
+/***/ },
+/* 212 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Firebase = __webpack_require__(213);
+	var React = __webpack_require__(1);
+	var ReactFireMixin = __webpack_require__(214);
+	var Notes = __webpack_require__(215);
+	var Repos = __webpack_require__(218);
+	var UserProfile = __webpack_require__(219);
 
 	var Profile = React.createClass({
 	  displayName: 'Profile',
@@ -24438,7 +24486,7 @@
 	module.exports = Profile;
 
 /***/ },
-/* 212 */
+/* 213 */
 /***/ function(module, exports) {
 
 	/*! @license Firebase v2.3.2
@@ -24712,7 +24760,7 @@
 
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -25083,14 +25131,14 @@
 
 
 /***/ },
-/* 214 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var AddNote = __webpack_require__(215);
-	var NotesList = __webpack_require__(216);
+	var AddNote = __webpack_require__(216);
+	var NotesList = __webpack_require__(217);
 
 	var Notes = React.createClass({
 	  displayName: 'Notes',
@@ -25121,7 +25169,7 @@
 	module.exports = Notes;
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25175,7 +25223,7 @@
 	module.exports = AddNote;
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25204,7 +25252,7 @@
 	module.exports = NotesList;
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25249,7 +25297,7 @@
 	module.exports = Repos;
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
