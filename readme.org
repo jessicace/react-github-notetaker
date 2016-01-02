@@ -2290,3 +2290,209 @@
 
        module.exports = Main;     
      #+END_SRC
+* Making Server Requests in React with Axios
+
+  1. Install [[https://github.com/mzabriskie/axios][Axios]]. Axios is a promise-based HTTP client that allows
+     us to  make network requests. 
+     #+BEGIN_SRC sh
+     npm install --save axios@0.8.0
+     #+END_SRC
+     
+** Promises
+  - Here's a quick overview of [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise][Promises]].
+  - Generally, a promise is an [[http://dictionary.reference.com/browse/promise]['indication of what may be expected']].
+  - 'I will study more JavaScript in 2016 than I did in 2015' is a
+    promise to myself. Once I'm successful, I want to reward myself
+    with some cheesecake. At this stage, it is /pending/- I haven't
+    failed it yet, as 2016 only just started! It's too early to
+    say. If 2016 ends and I haven't studied any JavaScript, we can say
+    that my Promise has been /rejected/. Let's say I'm successful-
+    once I pass the amount I studied in 2015, the Promise has been
+    /fulfilled/. But it's not quite as simple as waiting until 2017
+    comes around, the Promise could be fulfilled by January 2016- and 
+    I'm not waiting 11 months for some cheesecake if I can have some
+    sooner. Once it's /fulfilled/, then I can have some cheesecake!
+  - In JavaScript land, you can create a Promise object by passing in
+    a function. Use it for asynchronous computations.  
+
+** Helper for Axios
+  1. Create a helpers.js file for handling our network requests,
+     inside of a new folder called utils. We are concerned with two
+     things: getting a user's repos, and getting a
+     user's bio. 
+     #+BEGIN_SRC js
+     // app/utils/helpers.js
+
+     var axios = require('axios');
+
+     function getRepos(username) {
+
+     }
+
+     function getUserBio(username) {
+     
+     }
+     #+END_SRC
+
+  2. Implement the getRepos() function using the [[https://developer.github.com/v3/repos/#list-user-repositories][GitHub API]], passing
+     in a username. Using axios, perform a get() request to the GitHub
+     API + /users/:username/repos. This function returns a [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise][Promise]] object. 
+     #+BEGIN_SRC js
+     // app/utils/helpers.js
+
+     var axios = require('axios');
+
+     function getRepos(username) {
+       return axios.get('https://api.github.com/users/' + username + '/repos');
+     }
+
+     function getUserBio(username) {
+     
+     }
+     #+END_SRC
+
+  3. Implement the getUserInfo() function using the [[https://developer.github.com/v3/users/#get-a-single-user][GitHub API]], again
+     passing in a username. Using axios, we perform a get() request to
+     the GitHub API + /users/:username. Again, this function returns a
+     [[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise][Promise]] object.
+     #+BEGIN_SRC js
+     // app/utils/helpers.js
+
+     var axios = require('axios');
+
+     function getRepos(username) {
+       return axios.get('https://api.github.com/users/' + username + '/repos');
+     }
+
+     function getUserBio(username) {
+       return axios.get('https://api.github.com/users/' + username);
+     }
+     #+END_SRC
+
+  4. Create and export a helpers object, which contains the
+     getGitHubInfo function. This function uses the two Promises
+     returned by our helper functions. We use [[https://github.com/mzabriskie/axios#axiosalliterable][axios.all]], which takes
+     in an array of Promises and returns a single promise with an
+     array of values (corresponding to the results of the original
+     functions' computations). We can access this data by passing a
+     function to the .then() property of our Promise, a property found
+     in every Promise. then() is invoked when the promise gets
+     resolved. So once our Promise object is resolved (i.e. after the
+     original Promises are resolved), we can return an object
+     containing the repos and profile data! Phew.
+
+     #+BEGIN_SRC js
+       // app/utils/helpers.js
+
+       var axios = require('axios');
+
+       function getRepos(username) {
+         return axios.get('https://api.github.com/users/' + username + '/repos');
+       }
+
+       function getUserBio(username) {
+         return axios.get('https://api.github.com/users/' + username);
+       }
+
+       var helpers = {
+         getGitHubInfo: function(username) {
+           return axios.all([
+             getRepos(username),
+             getUserBio(username)
+           ]).then(function(array) {
+             return {
+               repos: array[0].data,
+               bio: array[1].data
+             };
+           });
+         }
+       };
+
+       module.exports = helpers;
+     #+END_SRC
+
+  5. Use the getGitHubInfo helper in our Profile component. When this
+     component mounts, after it sets up Firebase, we invoke
+     helpers.getGitHubInfo and pass in the username from the route
+     params. This will return a promise, that we can use .then() on by
+     passing in the function we wish to execute after getGitHubInfo is
+     resolved. Note that we use .bind(this)- using bind allows us to
+     specify what 'this' refers to within the scope of the
+     function. When our data is ready, use setState to update our
+     state object with the bio and repos data. We can remove the fake
+     data now, too.
+     
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+       var helpers = require('../utils/helpers');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [],
+             bio: {},
+             repos: []
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+
+           helpers.getGitHubInfo(this.props.params.username)
+                  .then(function(data) {
+                    this.setState({
+                      bio: data.bio,
+                      repos: data.repos
+                    });
+                  }.bind(this));
+
+         },
+         componentWillUnmount: function() {
+           this.unbind('notes');
+         },
+         handleAddNote: function(newNote) {
+           this.ref
+               .child(this.props.params.username)
+               .child(this.state.notes.length)
+               .set(newNote);
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes }
+                        addNote={ this.handleAddNote }
+                 />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;
+     #+END_SRC
+
+  6. As of React 0.14, we can no longer get JSON and show it to the
+     view- this is because an Object is not a valid React child. For
+     now, update the UserProfile and Repos components to console.log
+     the results instead of rendering them.

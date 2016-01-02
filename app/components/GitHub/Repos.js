@@ -6,13 +6,10 @@ var Repos = React.createClass({
     repos: React.PropTypes.array.isRequired
   },
   render: function() {
+    console.log('REPOS', this.props.repos);
     return (
       <section>
         <h2>Repos for { this.props.username }</h2>
-        <dl>
-          <dt>Repos</dt>
-          <dd>{ this.props.repos }</dd>
-        </dl>
       </section>
     );
   }
