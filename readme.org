@@ -1587,3 +1587,508 @@
   5. Test that everything is working. You can try altering/removing
      some of the props passed in by the Profile component, and
      ensuring that you get errors.
+* Managing State in Child Components
+
+  1. Add a handleAddnote function to our Profile component. It will
+     take one argument, the newNote we wish to add to the user. We
+     want to manipulate state where it lives - and our Notes component
+     lives in the Profile component. So, we declare the function here
+     and pass it down to the relevant child component, where it will
+     eventually be invoked. 
+
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+         },
+         componentWillUnmount: function() {
+           this.unbind('notes');
+         },
+         handleAddNote: function(newNote) {
+           
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes }
+                 />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;
+
+     #+END_SRC
+
+  2. Update the Firebase endpoint with new data. The first child finds
+     the relevant user. The second child is the length of the array,
+     so when we set() data, a new note is appended to the end of an
+     array. Because we have bound our note state to our childref, when
+     we update our endpoint, these updates are pushed to our
+     state. When this happens the component will re-render. Firebase
+     also has a push() method, but this generates its own key.
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+         },
+         componentWillUnmount: function() {
+           this.unbind('notes');
+         },
+         handleAddNote: function(newNote) {
+           this.ref
+               .child(this.props.params.username)
+               .child(this.state.notes.length)
+               .set(newNote);
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes }
+                 />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;
+
+     #+END_SRC
+
+  3. Pass in handleAddNote as a prop to our Notes component. 
+     #+BEGIN_SRC js
+       // app/components/Profile.js
+
+       var Firebase = require('Firebase');
+       var React = require('react');
+       var ReactFireMixin = require('reactfire');
+       var Notes = require('./Notes/Notes');
+       var Repos = require('./GitHub/Repos');
+       var UserProfile = require('./GitHub/UserProfile');
+
+       var Profile = React.createClass({
+         mixins: [ ReactFireMixin ],
+         getInitialState: function() {
+           return {
+             notes: [
+               'Cool Note 1',
+               'Cool Note 2'
+             ],
+             bio: {
+               name: 'Jessica'
+             },
+             repos: [
+               'Cool Repo 1',
+               'Cool Repo 2'
+             ]
+           };
+         },
+         componentDidMount: function() {
+           this.ref = new Firebase('https://react-github-notetaker.firebaseio.com/');
+           var childRef = this.ref.child(this.props.params.username);
+           this.bindAsArray(childRef, 'notes');
+         },
+         componentWillUnmount: function() {
+           this.unbind('notes');
+         },
+         handleAddNote: function(newNote) {
+           // Update firebase with the newNote.
+           this.ref
+               .child(this.props.params.username)
+               .child(this.state.notes.length)
+               .set(newNote);
+         },
+         render: function() {
+           return (
+             <div className="row">
+               <div className="col-md-4">
+                 <UserProfile username={ this.props.params.username }
+                              bio={ this.state.bio }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Repos username={ this.props.params.username }
+                        repos={ this.state.repos }
+                 />
+               </div>
+               <div className="col-md-4">
+                 <Notes username={ this.props.params.username }
+                        notes={ this.state.notes }
+                        addNote={ this.handleAddNote }
+                 />
+               </div>
+             </div>
+           );
+         }
+       });
+
+       module.exports = Profile;
+
+     #+END_SRC
+
+  4. Add a new propType to our Notes component to deal with
+     addNote. addNote should be a function (specified with
+     React.PropTypes.func) and is also required.
+     #+BEGIN_SRC js
+       // app/components/Notes/Notes.js
+
+       var React = require('react');
+       var NotesList = require('./NotesList');
+
+       var Notes = React.createClass({
+         propTypes: {
+           username: React.PropTypes.string.isRequired,
+           notes: React.PropTypes.array.isRequired,
+           addNote: React.PropTypes.func.isRequired
+         },
+         render: function() {
+           return (
+             <section>
+               <h2>Notes for { this.props.username }</h2>
+               <NotesList notes={ this.props.notes } />
+             </section>
+           );
+         }
+       });
+
+       module.exports = Notes;
+     #+END_SRC
+
+  5. Create an AddNote component to our Notes folder.
+     #+BEGIN_SRC js
+     // app/components/Notes/AddNote.js
+     var React = require('react');
+
+     var AddNote = React.createClass({
+       propTypes: {
+         username: React.PropTypes.string.isRequired,
+         addNote: React.PropTypes.func.isRequired
+       },
+       render: function() {
+       
+       }
+     });
+
+     module.exports = AddNote;
+     #+END_SRC
+
+  6. Specify its propTypes. Specifically, it requires a username and
+     an addNote function.
+     #+BEGIN_SRC js
+     // app/components/Notes/AddNote.js
+     var React = require('react');
+
+     var AddNote = React.createClass({
+       propTypes: {
+         username: React.PropTypes.string.isRequired,
+         addNote: React.PropTypes.func.isRequired
+       },
+       render: function() {
+       
+       }
+     });
+
+     module.exports = AddNote;
+     #+END_SRC
+
+  7. Add the render function. We need an input field and a button for
+     submitting the note.
+     #+BEGIN_SRC js
+     // app/components/Notes/AddNote.js
+     var React = require('react');
+
+     var AddNote = React.createClass({
+       propTypes: {
+         username: React.PropTypes.string.isRequired,
+         addNote: React.PropTypes.func.isRequired
+       },
+       render: function() {
+         return (
+           <div className="input-group">
+             <label>
+               Add New Note
+               <input type="text" 
+                      className="form-control" 
+                      placeholder={ `${this.props.username} is super cool` } 
+               />
+             </label>
+           </div>
+         );
+       }
+     });
+
+     module.exports = AddNote;
+     #+END_SRC
+
+  8. Add a setRef function to the AddNote component, passing in a
+     specific ref. We are doing this so we can get the value of our
+     new note input field, which will then be passed into our addNote
+     function. A ref is like a name tag so you can access it
+     later. This function takes in a ref, and adds it as a property on
+     our instance. We can then query the property and do whatever we
+     need to do with its value. We need to get the newNote from our
+     input field. 
+
+     #+BEGIN_SRC js
+     // app/components/Notes/AddNote.js
+     var React = require('react');
+
+     var AddNote = React.createClass({
+       propTypes: {
+         username: React.PropTypes.string.isRequired,
+         addNote: React.PropTypes.func.isRequired
+       },
+       setRef: function(ref) {
+         this.note = ref;
+       },
+       render: function() {
+         return (
+           <div className="input-group">
+             <label>
+               Add New Note
+               <input type="text" 
+                      className="form-control" 
+                      placeholder={ `${this.props.username} is super cool` } 
+               />
+             </label>
+           </div>
+         );
+       }
+     });
+
+     module.exports = AddNote;
+     #+END_SRC
+
+  9. Add the ref attribute to our input, passing in the setRef
+     function. 
+     #+BEGIN_SRC js
+     // app/components/Notes/AddNote.js
+     var React = require('react');
+
+     var AddNote = React.createClass({
+       propTypes: {
+         username: React.PropTypes.string.isRequired,
+         addNote: React.PropTypes.func.isRequired
+       },
+       setRef: function(ref) {
+         this.note = ref;
+       },
+       render: function() {
+         return (
+           <div className="input-group">
+             <label>
+               Add New Note
+               <input type="text" 
+                      className="form-control" 
+                      placeholder={ `${this.props.username} is super cool` } 
+                      ref={ this.setRef }
+               />
+             </label>
+           </div>
+         );
+       }
+     });
+
+     module.exports = AddNote;
+     #+END_SRC
+
+  10. Create a button input for the AddNote component. When someone
+      clicks on our submit button, we grab the value from the input
+      field, and pass it to a new function called handleSubmit.
+      #+BEGIN_SRC js
+      // app/components/Notes/AddNote.js
+      var React = require('react');
+
+      var AddNote = React.createClass({
+        propTypes: {
+          username: React.PropTypes.string.isRequired,
+          addNote: React.PropTypes.func.isRequired
+        },
+        setRef: function(ref) {
+          this.note = ref;
+        },
+        render: function() {
+          return (
+            <div className="input-group">
+              <label>
+                Add New Note
+                <input type="text" 
+                       className="form-control" 
+                       placeholder={ `${this.props.username} is super cool` } 
+                />
+              </label>
+              <span className="input-group-btn">
+                <button className="btn btn-default" 
+                        type="button"
+                        onClick={ this.handleSubmit }>
+                  Submit
+                </button>
+              </span>
+            </div>
+          );
+        }
+      });
+     
+      module.exports = AddNote;
+      #+END_SRC
+
+  11. Add a handleSubmit function. this.note is valid because of
+      setRef. Once we get the value, we set the current text to ''
+      (essentially resetting it). We then call the function addNote
+      passed down from our Profile component with the value we
+      previously got from our input. 
+      #+BEGIN_SRC js
+        // app/components/Notes/AddNote.js
+
+        var React = require('react');
+
+        var AddNote = React.createClass({
+          propTypes: {
+            username: React.PropTypes.string.isRequired,
+            addNote: React.PropTypes.func.isRequired
+          },
+          handleSubmit: function() {
+            var newNote = this.note.value;
+            this.props.addNote(newNote);
+            this.note.value = '';
+          },
+          setRef: function(ref) {
+            this.note = ref;
+          },
+          render: function() {
+            return (
+              <div className="input-group">
+                <label>
+                  Add New Note
+                  <input type="text" 
+                         className="form-control" 
+                         placeholder={ `${this.props.username} is super cool` } 
+                  />
+                </label>
+                <span className="input-group-btn">
+                  <button className="btn btn-default" 
+                          type="button"
+                          onClick={ this.handleSubmit }>
+                    Submit
+                  </button>
+                </span>
+              </div>
+            );
+          }
+        });
+
+        module.exports = AddNote;
+      #+END_SRC
+
+  12. In our Notes component, require our newly created AddNote
+      component, and add it to the render function.
+      #+BEGIN_SRC js
+        // app/components/Notes/Notes.js
+
+        var React = require('react');
+        var AddNote = require('./AddNote');
+        var NotesList = require('./NotesList');
+
+        var Notes = React.createClass({
+          propTypes: {
+            username: React.PropTypes.string.isRequired,
+            notes: React.PropTypes.array.isRequired,
+            addNote: React.PropTypes.func.isRequired
+          },
+          render: function() {
+            return (
+              <section>
+                <h2>Notes for { this.props.username }</h2>
+                <AddNote username={ this.props.username }
+                         addNote={ this.props.addNote }
+                />
+                <NotesList notes={ this.props.notes } />
+              </section>
+            );
+          }
+        });
+
+        module.exports = Notes;
+
+      #+END_SRC
